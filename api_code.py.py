@@ -1,7 +1,6 @@
 # SI 206 Final Project - STE(a)Migos
 # Names: Michelle Karls, Selin Fidan, Julia Couch
 
-
 import requests
 import json
 import os
@@ -21,6 +20,7 @@ def create_iss_table(cur, conn):
     pass
 
 # step 2: define function to request from api
+issdata = {}
 def iss_position():
     base_url = 'http://api.open-notify.org/iss-now.json'
     req = requests.get(base_url)
@@ -28,7 +28,20 @@ def iss_position():
     time = data['timestamp']
     lat = data['iss_position']['latitude']
     long = data['iss_position']['longitude']
-    return (time, lat, long)
+    return {"time": time, "lat": lat, "long": long}
+
+index = 0
+for x in range(25):
+    issdata[index]= iss_position()
+   
+   
+
+def iss_csv_file(iss_position()):
+    with open(os.path.join(os.path.abspath(os.path.dirname(__file__)), "isspos.csv"), 'w') as f:
+        f.write(issdata)
+   
+        
+
 
 def create_weather_table(cur, conn):
     """make sure to commit new data"""
@@ -58,7 +71,7 @@ def main():
     cur, conn = setUpDatabase('API_Data.db')
 
     # create_iss_table(cur, conn)
-
+   
     # create_weather_table(cur, conn)
 
     # create_daylight_table(cur, conn)
