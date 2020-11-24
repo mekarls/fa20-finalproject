@@ -6,9 +6,19 @@ import requests
 import json
 import os
 import unittest
+import sqlite3
 
 # ------------------TUESDAY, NOV 24------------------
-# step 1: get access to _ api
+# step 1: create database
+def setUpDatabase(db_name):    
+    path = os.path.dirname(os.path.abspath(__file__))
+    conn = sqlite3.connect(path+'/'+db_name)
+    cur = conn.cursor()
+    return cur, conn
+
+def create_iss_table(cur, conn):
+    """make sure to commit new data"""
+    pass
 
 # step 2: define function to request from api
 def iss_position():
@@ -19,12 +29,20 @@ def iss_position():
     lat = data['iss_position']['latitude']
     long = data['iss_position']['longitude']
     return (time, lat, long)
-# step 3: in same function, save _ data to a csv file 
-print(iss_position())
-# step 4: create database (database name: API Data)
-# 
-# step 5: in a second function, write data from file into db table 1 (_)
 
+def create_weather_table(cur, conn):
+    """make sure to commit new data"""
+    pass
+
+def weather(params):
+    pass
+
+def create_daylight_table(cur, conn):
+    """make sure to commit new data"""
+    pass
+
+def daylight(params):
+    pass
 
 # ------------------WEDNESDAY, NOV 25------------------
 # step 1: get access to weather api
@@ -35,3 +53,12 @@ print(iss_position())
 # 
 # step 4: in a second function, write weather data from file into db table 2 (Weather)
 
+def main():
+    # Database and Tables
+    cur, conn = setUpDatabase('API_Data.db')
+
+    # create_iss_table(cur, conn)
+
+    # create_weather_table(cur, conn)
+
+    # create_daylight_table(cur, conn)
