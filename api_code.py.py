@@ -14,6 +14,7 @@ def setUpDatabase(db_name):
     conn = sqlite3.connect(path+'/'+db_name)
     cur = conn.cursor()
     return cur, conn
+    pass
 
 def create_iss_table(cur, conn):
     """make sure to commit new data"""
@@ -28,23 +29,38 @@ def iss_position():
     time = data['timestamp']
     lat = data['iss_position']['latitude']
     long = data['iss_position']['longitude']
-    return {"time": time, "lat": lat, "long": long}
+    # return {"time": time, "lat": lat, "long": long}
+    return f'{time},{lat},{long}'
 
+def write_iss_csv():
+    header = 'time,latitude,longitude'
+    # with open(os.path.join(os.path.abspath(os.path.dirname(__file__)), "iss_pos.csv"), 'w') as f:
+    #     f.write(header)
+    #     f.close()
+    f = open('iss_pos.csv', 'w')
+    f.write(header+'\n')
+    f.close()
+    for _ in range(25):
+        iss_data = iss_position()
+        f = open('iss_pos.csv', 'a')
+        f.write(iss_data+'\n')
+        f.close()
+    
+write_iss_csv()
+# for x in range(1,26):
+#     issdata[x]= iss_position()
+# print(issdata, len(issdata))
+# for x in range(26,51):
+#     issdata[x] = iss_position()
+# print(issdata, len(issdata))
+# for x in range(51,76):
+#     issdata[x] = iss_position()
+# print(issdata, len(issdata))
 
-for x in range(1,26):
-    issdata[x]= iss_position()
-print(issdata, len(issdata))
-for x in range(26,51):
-    issdata[x] = iss_position()
-print(issdata, len(issdata))
-for x in range(51,76):
-    issdata[x] = iss_position()
-print(issdata, len(issdata))
-
-def iss_csv_file():
-    with open(os.path.join(os.path.abspath(os.path.dirname(__file__)), "isspos.csv"), 'w') as f:
-        for x in issdata:
-            f.write(x + "\n")
+# def iss_csv_file():
+#     with open(os.path.join(os.path.abspath(os.path.dirname(__file__)), "isspos.csv"), 'w') as f:
+#         for x in issdata:
+#             f.write(x + "\n")
 
 
 
@@ -86,3 +102,4 @@ def main():
     # create_weather_table(cur, conn)
 
     # create_daylight_table(cur, conn)
+    pass
