@@ -30,15 +30,24 @@ def iss_position():
     long = data['iss_position']['longitude']
     return {"time": time, "lat": lat, "long": long}
 
-index = 0
-for x in range(25):
-    issdata[index]= iss_position()
-   
-   
 
-def iss_csv_file(iss_position()):
+for x in range(1,26):
+    issdata[x]= iss_position()
+print(issdata, len(issdata))
+for x in range(26,51):
+    issdata[x] = iss_position()
+print(issdata, len(issdata))
+for x in range(51,76):
+    issdata[x] = iss_position()
+print(issdata, len(issdata))
+
+def iss_csv_file():
     with open(os.path.join(os.path.abspath(os.path.dirname(__file__)), "isspos.csv"), 'w') as f:
-        f.write(issdata)
+        for x in issdata:
+            f.write(x + "\n")
+
+
+
    
         
 
@@ -67,6 +76,8 @@ def daylight(params):
 # step 4: in a second function, write weather data from file into db table 2 (Weather)
 
 def main():
+    
+
     # Database and Tables
     cur, conn = setUpDatabase('API_Data.db')
 
