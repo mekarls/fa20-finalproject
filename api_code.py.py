@@ -14,14 +14,9 @@ def setUpDatabase(db_name):
     conn = sqlite3.connect(path+'/'+db_name)
     cur = conn.cursor()
     return cur, conn
-    pass
 
-def create_iss_table(cur, conn):
-    """make sure to commit new data"""
-    pass
+# step 2: define function to request iss_data
 
-# step 2: define function to request from api
-issdata = {}
 def iss_position():
     base_url = 'http://api.open-notify.org/iss-now.json'
     req = requests.get(base_url)
@@ -32,11 +27,10 @@ def iss_position():
     # return {"time": time, "lat": lat, "long": long}
     return f'{time},{lat},{long}'
 
+# step 3: write iss_data to csv file
+
 def write_iss_csv():
     header = 'time,latitude,longitude'
-    # with open(os.path.join(os.path.abspath(os.path.dirname(__file__)), "iss_pos.csv"), 'w') as f:
-    #     f.write(header)
-    #     f.close()
     f = open('iss_pos.csv', 'w')
     f.write(header+'\n')
     f.close()
@@ -45,8 +39,29 @@ def write_iss_csv():
         f = open('iss_pos.csv', 'a')
         f.write(iss_data+'\n')
         f.close()
+# write_iss_csv() 
+
+# step 4: read csv file into database
+
+def create_iss_table(cur, conn):
+    """make sure to commit new data"""
+    cur.execute('''CREATE TABLE IF NOT EXISTS 'ISS_Data_1' 
+    ('timestamp' TEXT, 'latitude' TEXT, 'longitude' TEXT)''')
     
-write_iss_csv()
+def insert_iss_data(cur, conn):    
+    with open('iss_pos.csv', 'r') as fhand:
+        lines = fhand.readlines()
+        for line in lines[1:]:
+            line = line.strip().split(',')
+            time = line[0]
+            lat = line[1]
+            long = line[2]
+            # print(type(time), type(lat), type(long))
+            cur.execute('INSERT INTO ISS_Data_1 (timestamp, latitude, longitude) VALUES (?, ?, ?)', (time, lat, long))
+            conn.commit()
+    # conn.close()
+    # pass
+
 # for x in range(1,26):
 #     issdata[x]= iss_position()
 # print(issdata, len(issdata))
@@ -61,11 +76,6 @@ write_iss_csv()
 #     with open(os.path.join(os.path.abspath(os.path.dirname(__file__)), "isspos.csv"), 'w') as f:
 #         for x in issdata:
 #             f.write(x + "\n")
-
-
-
-   
-        
 
 
 def create_weather_table(cur, conn):
@@ -93,13 +103,15 @@ def daylight(params):
 
 def main():
     
-
+    # pass
     # Database and Tables
     cur, conn = setUpDatabase('API_Data.db')
 
-    # create_iss_table(cur, conn)
-   
+    create_iss_table(cur, conn)
+    insert_iss_data(cur, conn)
+    
     # create_weather_table(cur, conn)
 
     # create_daylight_table(cur, conn)
-    pass
+if __name__ == '__main__':
+    main()
