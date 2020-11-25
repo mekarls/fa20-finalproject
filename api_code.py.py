@@ -51,38 +51,54 @@ def create_iss_table(cur, conn):
 def insert_iss_data(cur, conn):    
     with open('iss_pos.csv', 'r') as fhand:
         lines = fhand.readlines()
+        
+        times = []
+        lats = []
+        longs = []
+
+        # l = list()
+        # for _ in range(25):
+        #     l.append(_)
+
         for line in lines[1:]:
             line = line.strip().split(',')
             time = line[0]
             lat = line[1]
             long = line[2]
-            # print(type(time), type(lat), type(long))
+
+            times.append(int(time))
+            lats.append(float(lat))
+            longs.append(float(long))
+
             cur.execute('INSERT INTO ISS_Data_1 (timestamp, latitude, longitude) VALUES (?, ?, ?)', (time, lat, long))
             conn.commit()
-    # conn.close()
-    # pass
 
-# for x in range(1,26):
-#     issdata[x]= iss_position()
-# print(issdata, len(issdata))
-# for x in range(26,51):
-#     issdata[x] = iss_position()
-# print(issdata, len(issdata))
-# for x in range(51,76):
-#     issdata[x] = iss_position()
-# print(issdata, len(issdata))
+        t = sum(times)/float(len(times))
+        la = round(sum(lats)/float(len(lats)), 4)
+        lo = round(sum(longs)/float(len(longs)), 4)
+        
+        cur.execute('''CREATE TABLE IF NOT EXISTS 'Avg_ISS'
+        (id INTEGER PRIMARY KEY, avg_time NUMBER, avg_lat NUMBER, avg_long NUMBER)''')
 
-# def iss_csv_file():
-#     with open(os.path.join(os.path.abspath(os.path.dirname(__file__)), "isspos.csv"), 'w') as f:
-#         for x in issdata:
-#             f.write(x + "\n")
-
+        cur.execute('INSERT INTO Avg_ISS (id, avg_time, avg_lat, avg_long) VALUES (?, ?, ?, ?)', (1, t, la, lo))
+        conn.commit()
 
 def create_weather_table(cur, conn):
     """make sure to commit new data"""
     pass
 
 def weather(params):
+    # api_key = '1bc5438768mshc8ba727986a1b1ap18522ejsnd016edc7cb65'
+    # base_url = 'https://api.darksky.net/forecast/'
+    # req = requests.get(base_url, )
+    #[key]/[latitude],[longitude],[time]'
+    # with open('iss_pos.csv', 'r') as fhand:
+    #     lines = fhand.readlines()
+    #     for line in lines[1:]:
+    #         line = line.strip().split(',')
+    #         time = line[0]
+    #         lat = line[1]
+    #         long = line[2]
     pass
 
 def create_daylight_table(cur, conn):
