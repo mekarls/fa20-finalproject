@@ -52,27 +52,24 @@ def write_iss_csv():
 
 def create_iss_table(cur, conn):
     """make sure to commit new data"""
-    cur.execute('''DROP TABLE IF EXISTS 'ISS_Data_1'''')
-    cur.execute('''CREATE TABLE 'ISS_Data_1' 
+  
+    cur.execute('''CREATE TABLE IF NOT EXISTS 'ISS_Data_1' 
     ('unix' TEXT, 'latitude' TEXT, 'longitude' TEXT)''')
     
-    cur.execute('''DROP TABLE IF EXISTS 'ISS_Data_2'''')
-    cur.execute('''CREATE TABLE 'ISS_Data_2' 
+    cur.execute('''CREATE TABLE IF NOT EXISTS 'ISS_Data_2' 
     ('unix' TEXT, 'latitude' TEXT, 'longitude' TEXT)''')
 
-    cur.execute('''DROP TABLE IF EXISTS 'ISS_Data_3'''')
-    cur.execute('''CREATE TABLE 'ISS_Data_3' 
+    cur.execute('''CREATE TABLE IF NOT EXISTS 'ISS_Data_3' 
     ('unix' TEXT, 'latitude' TEXT, 'longitude' TEXT)''')
 
-    cur.execute('''DROP TABLE IF EXISTS 'ISS_Data_4'''')
-    cur.execute('''CREATE TABLE  'ISS_Data_4' 
+    cur.execute('''CREATE TABLE IF NOT EXISTS 'ISS_Data_4' 
     ('unix' TEXT, 'latitude' TEXT, 'longitude' TEXT)''')
 
 def insert_iss_data(cur, conn):    
-    with open('iss_pos.csv', 'r') as fhand:
-    #with open('iss_pos2.csv', 'r') as fhand:
-    #with open('iss_pos3.csv', 'r') as fhand:
-    # with open('iss_pos4.csv', 'r') as fhand:
+    # with open('iss_pos.csv', 'r') as fhand:
+    # with open('iss_pos2.csv', 'r') as fhand:
+    # with open('iss_pos3.csv', 'r') as fhand:
+    with open('iss_pos4.csv', 'r') as fhand:
     
         lines = fhand.readlines()
         
@@ -90,24 +87,26 @@ def insert_iss_data(cur, conn):
             lats.append(float(lat))
             longs.append(float(long))
 
-            cur.execute('INSERT INTO ISS_Data_1 (unix, latitude, longitude) VALUES (?, ?, ?)', (time, lat, long))
-            #cur.execute('INSERT INTO ISS_Data_2 (unix, latitude, longitude) VALUES (?, ?, ?)', (time, lat, long))
-            #cur.execute('INSERT INTO ISS_Data_3 (unix, latitude, longitude) VALUES (?, ?, ?)', (time, lat, long))
-            # cur.execute('INSERT INTO ISS_Data_4 (unix, latitude, longitude) VALUES (?, ?, ?)', (time, lat, long))
+            # cur.execute('INSERT INTO ISS_Data_1 (unix, latitude, longitude) VALUES (?, ?, ?)', (time, lat, long))
+            # cur.execute('INSERT INTO ISS_Data_2 (unix, latitude, longitude) VALUES (?, ?, ?)', (time, lat, long))
+            # cur.execute('INSERT INTO ISS_Data_3 (unix, latitude, longitude) VALUES (?, ?, ?)', (time, lat, long))
+            cur.execute('INSERT INTO ISS_Data_4 (unix, latitude, longitude) VALUES (?, ?, ?)', (time, lat, long))
             conn.commit()
 
         t = sum(times)/float(len(times))
-        t_update = datetime.utcfromtimestamp(t).strftime('%Y-%m-%d %H:%M:%S') #returns date, time
+        t_update = (datetime.utcfromtimestamp(t).strftime('%Y-%m-%d %H:%M:%S')).split() #returns date, time
+        # print(t_update[1])
         la = round(sum(lats)/float(len(lats)), 4)
         lo = round(sum(longs)/float(len(longs)), 4)
         
+        # cur.execute("DROP TABLE IF EXISTS 'Avg_ISS'")
         cur.execute('''CREATE TABLE IF NOT EXISTS 'Avg_ISS'
         (id INTEGER PRIMARY KEY, avg_unix NUMBER, date TEXT, time TEXT, avg_lat NUMBER, avg_long NUMBER)''')
 
-        cur.execute('INSERT INTO Avg_ISS (id, avg_time, avg_lat, avg_long) VALUES (?, ?, ?, ?)', (1, t, t_update[0], t_update[1], la, lo))
-        #cur.execute('INSERT INTO Avg_ISS (id, avg_time, avg_lat, avg_long) VALUES (?, ?, ?, ?)', (2, t, t_update[0], t_update[1], la, lo))
-        #cur.execute('INSERT INTO Avg_ISS (id, avg_time, avg_lat, avg_long) VALUES (?, ?, ?, ?)', (3, t, t_update[0], t_update[1], la, lo))
-        # cur.execute('INSERT INTO Avg_ISS (id, avg_time, avg_lat, avg_long) VALUES (?, ?, ?, ?)', (4, t, t_update[0], t_update[1], la, lo))
+        # cur.execute('INSERT INTO Avg_ISS (id, avg_unix, date, time, avg_lat, avg_long) VALUES (?, ?, ?, ?, ?, ?)', (1, t, t_update[0], t_update[1], la, lo))
+        # cur.execute('INSERT INTO Avg_ISS (id, avg_unix, date, time, avg_lat, avg_long) VALUES (?, ?, ?, ?, ?, ?)', (2, t, t_update[0], t_update[1], la, lo))
+        # cur.execute('INSERT INTO Avg_ISS (id, avg_unix, date, time, avg_lat, avg_long) VALUES (?, ?, ?, ?, ?, ?)', (3, t, t_update[0], t_update[1], la, lo))
+        cur.execute('INSERT INTO Avg_ISS (id, avg_unix, date, time, avg_lat, avg_long) VALUES (?, ?, ?, ?, ?, ?)', (4, t, t_update[0], t_update[1], la, lo))
         conn.commit()
      
 # def time_converstion(cur, conn):
@@ -168,8 +167,8 @@ def main():
     # Database and Tables
     cur, conn = setUpDatabase('API_Data.db')
     # write_iss_csv()
-    # create_iss_table(cur, conn)
-    # insert_iss_data(cur, conn)
+    create_iss_table(cur, conn)
+    insert_iss_data(cur, conn)
     # create_weather_table(cur, conn)
 
     # create_daylight_table(cur, conn)
