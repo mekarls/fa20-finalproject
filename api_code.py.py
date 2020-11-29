@@ -109,8 +109,9 @@ def insert_iss_data(cur, conn):
         # conn.commit()
 
 def create_weather_table(cur, conn):
-    """make sure to commit new data"""
-    pass
+    cur.execute('ALTER TABLE Avg_ISS ADD temp, humidity, windspeed, cloudcover, visibility')
+    conn.commit()
+  
 
 def weather(cur, conn):
 
@@ -127,6 +128,7 @@ def weather(cur, conn):
     r = requests.get(base_url + lat1 + ',' + long1 + '/' + date1 + "?key=" + api_key)
     data = r.json()
     avg1_json = json.dumps(data)
+    print(avg1_json)
    
     
 
@@ -184,10 +186,11 @@ def main():
     # Database and Tables
     cur, conn = setUpDatabase('API_Data.db')
     # write_iss_csv()
-    create_iss_table(cur, conn)
-    insert_iss_data(cur, conn)
-    # create_weather_table(cur, conn)
-    weather(cur, conn)
+    #create_iss_table(cur, conn)
+    #insert_iss_data(cur, conn)
+    #create_weather_table(cur, conn)
+    create_weather_table(cur, conn)
+    #weather(cur, conn)
 
     # create_daylight_table(cur, conn)
 if __name__ == '__main__':
