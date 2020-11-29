@@ -112,12 +112,54 @@ def create_weather_table(cur, conn):
     """make sure to commit new data"""
     pass
 
-def weather(params):
-    # api_key = '97H6P669AZU5PIG16JBC5N4ES'
-    # base_url = 'https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/history/'
+def weather(cur, conn):
+
+    api_key = '97H6P669AZU5PIG16JBC5N4ES'
+    base_url = 'https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/'
+
+    #get information about avg1
+    cur.execute('SELECT avg_lat, avg_long, date FROM Avg_ISS WHERE id = 1')
+    avg1 = cur.fetchone()
+    lat1 = str(avg1[0])
+    long1 = str(avg1[1])
+    date1 = str(avg1[2])
+
+    r = requests.get(base_url + lat1 + ',' + long1 + '/' + date1 + "?key=" + api_key)
+    data = r.json()
+    avg1_json = json.dumps(data)
+   
+    
+
+    
+    
+
+    #get information about avg2
+    cur.execute('SELECT avg_lat, avg_long, date FROM Avg_ISS WHERE id = 2')
+    avg2 = cur.fetchone()
+    lat2 = str(avg2[0])
+    long2 = str(avg2[1])
+    date2 = str(avg2[2])
+
+    #get information about avg3
+    cur.execute('SELECT avg_lat, avg_long, date FROM Avg_ISS WHERE id = 3')
+    avg3 = cur.fetchone()
+    lat3 = str(avg3[0])
+    long3 = str(avg3[1])
+    date3 = str(avg3[2])
+
+
+    #get information about avg4
+    cur.execute('SELECT avg_lat, avg_long, date FROM Avg_ISS WHERE id = 4')
+    avg4 = cur.fetchone()
+    lat4 = str(avg4[0])
+    long4 = str(avg4[1])
+    date4 = str(avg4[2])
+
+
+ 
     
     # select data from Avg_ISS to input into requests
-    pass
+   
 
 def create_daylight_table(cur, conn):
     """make sure to commit new data"""
@@ -127,7 +169,7 @@ def daylight(params):
     #select data from Avg_ISS to input into requests
     pass
 
-# ------------------WEDNESDAY, NOV 25------------------
+# ------------------Monday, Nov 30------------------
 # step 1: get access to weather api
 # 
 # step 2: define function that selects date, time, location from table 1, returns as a nested dictionary
@@ -145,6 +187,7 @@ def main():
     create_iss_table(cur, conn)
     insert_iss_data(cur, conn)
     # create_weather_table(cur, conn)
+    weather(cur, conn)
 
     # create_daylight_table(cur, conn)
 if __name__ == '__main__':
