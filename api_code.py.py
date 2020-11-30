@@ -7,9 +7,10 @@ import os
 import unittest
 import sqlite3
 import urllib.request
+import time
 from datetime import datetime
 
-# ------------------TUESDAY, NOV 24------------------
+
 # step 1: create database
 def setUpDatabase(db_name):    
     path = os.path.dirname(os.path.abspath(__file__))
@@ -26,90 +27,37 @@ def iss_position():
     time = data['timestamp'] #str
     lat = data['iss_position']['latitude'] #str
     long = data['iss_position']['longitude'] #str
-    # return {"time": time, "lat": lat, "long": long}
+    
     return f'{time},{lat},{long}'
 
-# step 3: write iss_data to csv file
-
-def write_iss_csv():
-    header = 'time,latitude,longitude'
-    # f = open('iss_pos.csv', 'w')
-    #f = open('iss_pos2.csv', 'w')
-    #f = open('iss_pos3.csv', 'w')
-    # f = open('iss_pos4.csv', 'w')
-    f.write(header+'\n')
-    f.close()
-    for _ in range(25):
-        iss_data = iss_position()
-        # f = open('iss_pos.csv', 'a')
-        #f = open('iss_pos2.csv', 'a')
-        #f = open('iss_pos3.csv', 'a')
-        # f = open('iss_pos4.csv', 'a')
-        f.write(iss_data+'\n')
-        f.close() 
-
-# step 4: read csv file into database
+# step 3: read api into database
 
 def create_iss_table(cur, conn):
     """make sure to commit new data"""
   
-    cur.execute('''CREATE TABLE IF NOT EXISTS 'ISS_Data_1' 
-    ('avg_id' integer, 'unix' text, 'latitude' text, 'longitude' text)''')
-    
-    cur.execute('''CREATE TABLE IF NOT EXISTS 'ISS_Data_2' 
-    ('avg_id' integer, 'unix' TEXT, 'latitude' TEXT, 'longitude' TEXT)''')
+    cur.execute('''CREATE TABLE IF NOT EXISTS 'ISS_Data' 
+    ('location_id' INTEGER PRIMARY KEY, 'unix' TEXT, 'date' TEXT, 'time' TEXT, 'latitude' TEXT, 'longitude' TEXT)''')
 
-    cur.execute('''CREATE TABLE IF NOT EXISTS 'ISS_Data_3' 
-    ('avg_id' integer, 'unix' TEXT, 'latitude' TEXT, 'longitude' TEXT)''')
-
-    cur.execute('''CREATE TABLE IF NOT EXISTS 'ISS_Data_4' 
-    ('avg_id' integer, 'unix' TEXT, 'latitude' TEXT, 'longitude' TEXT)''')
-
-def insert_iss_data(cur, conn):    
-    # with open('iss_pos.csv', 'r') as fhand:
-    # with open('iss_pos2.csv', 'r') as fhand:
-    # with open('iss_pos3.csv', 'r') as fhand:
-    with open('iss_pos4.csv', 'r') as fhand:
-    
-        lines = fhand.readlines()
+    for _ in range(25):
+        iss_data = iss_position()
+        iss_data = iss_data.split(',')
+        unix = iss_data[0]
+        time_update = (datetime.utcfromtimestamp(int(unix)).strftime('%Y-%m-%d %H:%M:%S')).split()
+        date = time_update[0]
+        t = time_update[1]
+        lat = iss_data[1]
+        long = iss_data[2]
         
-        times = []
-        lats = []
-        longs = []
+        cur.execute('INSERT INTO ISS_Data (unix, date, time, latitude, longitude) VALUES (?, ?, ?, ?, ?)', (unix, date, t, lat, long))
+        conn.commit()
 
-        for line in lines[1:]:
-            line = line.strip().split(',')
-            time = line[0]
-            lat = line[1]
-            long = line[2]
+        time.sleep(30)
 
-            times.append(int(time))
-            lats.append(float(lat))
-            longs.append(float(long))
 
-            # cur.execute('INSERT INTO ISS_Data_1 (avg_id, unix, latitude, longitude) VALUES (?, ?, ?, ?)', (1, time, lat, long))
-            # cur.execute('INSERT INTO ISS_Data_2 (avg_id, unix, latitude, longitude) VALUES (?, ?, ?, ?)', (2, time, lat, long))
-            # cur.execute('INSERT INTO ISS_Data_3 (avg_id, unix, latitude, longitude) VALUES (?, ?, ?, ?)', (3, time, lat, long))
-            cur.execute('INSERT INTO ISS_Data_4 (avg_id, unix, latitude, longitude) VALUES (?, ?, ?, ?)', (4, time, lat, long))
-            conn.commit()
-
-        t = sum(times)/float(len(times))
-        t_update = (datetime.utcfromtimestamp(t).strftime('%Y-%m-%d %H:%M:%S')).split() #returns date, time
-        la = round(sum(lats)/float(len(lats)), 4)
-        lo = round(sum(longs)/float(len(longs)), 4)
-        
-        # cur.execute("DROP TABLE IF EXISTS 'Avg_ISS'")
-        cur.execute('''CREATE TABLE IF NOT EXISTS 'Avg_ISS'
-        (id INTEGER PRIMARY KEY, avg_unix NUMBER, date TEXT, time TEXT, avg_lat NUMBER, avg_long NUMBER)''')
-
-        # cur.execute('INSERT INTO Avg_ISS (id, avg_unix, date, time, avg_lat, avg_long) VALUES (?, ?, ?, ?, ?, ?)', (1, t, t_update[0], t_update[1], la, lo))
-        # cur.execute('INSERT INTO Avg_ISS (id, avg_unix, date, time, avg_lat, avg_long) VALUES (?, ?, ?, ?, ?, ?)', (2, t, t_update[0], t_update[1], la, lo))
-        # cur.execute('INSERT INTO Avg_ISS (id, avg_unix, date, time, avg_lat, avg_long) VALUES (?, ?, ?, ?, ?, ?)', (3, t, t_update[0], t_update[1], la, lo))
-        # cur.execute('INSERT INTO Avg_ISS (id, avg_unix, date, time, avg_lat, avg_long) VALUES (?, ?, ?, ?, ?, ?)', (4, t, t_update[0], t_update[1], la, lo))
-        # conn.commit()
-
-def create_weather_table(cur, conn):
-    cur.execute('ALTER TABLE Avg_ISS ADD temp, humidity, windspeed, cloudcover, visibility')
+def create_weather_table(cur, conn): #should create a new table 
+    cur.execute('''CREATE TABLE IF NOT EXISTS 'Weather' 
+    ('location' TEXT UNIQUE, 'temp' TEXT, 'humidity' TEXT', 'windspeed' TEXT, 'cloudcover' TEXT, 'visibility' TEXT)''')
+    
     conn.commit()
   
 
@@ -156,11 +104,10 @@ def weather(cur, conn):
     lat4 = str(avg4[0])
     long4 = str(avg4[1])
     date4 = str(avg4[2])
+    pass
 
 
  
-    
-    # select data from Avg_ISS to input into requests
    
 
 def create_daylight_table(cur, conn):
@@ -168,29 +115,22 @@ def create_daylight_table(cur, conn):
     pass
 
 def daylight(params):
-    #select data from Avg_ISS to input into requests
+    #select data from ISS_Data to input into requests
     pass
 
-# ------------------Monday, Nov 30------------------
-# step 1: get access to weather api
-# 
-# step 2: define function that selects date, time, location from table 1, returns as a nested dictionary
-# 
-# step 3: input date, time, location (?) into api, write resulting weather into csv file 
-# 
-# step 4: in a second function, write weather data from file into db table 2 (Weather)
+
 
 def main():
     
     # pass
     # Database and Tables
     cur, conn = setUpDatabase('API_Data.db')
-    # write_iss_csv()
-    #create_iss_table(cur, conn)
-    #insert_iss_data(cur, conn)
+   
+    create_iss_table(cur, conn)
+    
     #create_weather_table(cur, conn)
-    create_weather_table(cur, conn)
-    #weather(cur, conn)
+    # create_weather_table(cur, conn)
+    #weather(cur, conn) DO NOT UNCOMMENT UNTIL ABSOLUTELY GOOD AND SURE AND READY
 
     # create_daylight_table(cur, conn)
 if __name__ == '__main__':
