@@ -56,7 +56,10 @@ def create_iss_table(cur, conn):
 
 def create_weather_table(cur, conn): #should create a new table 
     cur.execute('''CREATE TABLE IF NOT EXISTS 'Weather' 
-    ('location' TEXT UNIQUE, 'temp' TEXT, 'humidity' TEXT', 'windspeed' TEXT, 'cloudcover' TEXT, 'visibility' TEXT)''')
+    ('location' TEXT UNIQUE, 
+    FOREIGN KEY (location_id) REFERENCES ISS_Data (location_id),
+    'temp' TEXT, 'humidity' TEXT', 'windspeed' TEXT, 'cloudcover' TEXT, 'visibility' TEXT)''')
+    # not sure I did the foreign key right, we can ask Fernando during discussion tmw maybe
     
     conn.commit()
   
