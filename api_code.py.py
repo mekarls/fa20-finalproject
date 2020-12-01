@@ -55,60 +55,35 @@ def create_iss_table(cur, conn):
 
 
 def create_weather_table(cur, conn): #should create a new table 
-    cur.execute('''CREATE TABLE IF NOT EXISTS 'Weather' 
-    ('location' TEXT UNIQUE, 
-    FOREIGN KEY (location_id) REFERENCES ISS_Data (location_id),
-    'temp' TEXT, 'humidity' TEXT', 'windspeed' TEXT, 'cloudcover' TEXT, 'visibility' TEXT)''')
-    # not sure I did the foreign key right, we can ask Fernando during discussion tmw maybe
+    # cur.execute('''CREATE TABLE IF NOT EXISTS 'Weather' 
+    # ('location' TEXT UNIQUE, 
+    # FOREIGN KEY ('location_id') REFERENCES ISS_Data (location_id),
+    # 'temp' TEXT, 'humidity' TEXT', 'windspeed' TEXT, 'cloudcover' TEXT, 'visibility' TEXT)''')
+    # # not sure I did the foreign key right, we can ask Fernando during discussion tmw maybe
     
-    conn.commit()
-  
+    # conn.commit()
+    pass
 
 def weather(cur, conn):
 
     api_key = '97H6P669AZU5PIG16JBC5N4ES'
-    base_url = 'https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/'
+    # base_url = 'https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/'
+    base_url = 'https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/weatherdata/history/'
 
-    #get information about avg1
-    cur.execute('SELECT avg_lat, avg_long, date FROM Avg_ISS WHERE id = 1')
-    avg1 = cur.fetchone()
-    lat1 = str(avg1[0])
-    long1 = str(avg1[1])
-    date1 = str(avg1[2])
+    cur.execute('SELECT latitude, longitude, date FROM ISS_Data')
+    data1 = cur.fetchall()
 
-    r = requests.get(base_url + lat1 + ',' + long1 + '/' + date1 + "?key=" + api_key)
-    data = r.json()
-    avg1_json = json.dumps(data)
-    print(avg1_json)
-   
-    
+    data2 = []
+    for i in data1[1]:
+        lat = i[0]
+        lon = i[1]
+        dat = i[2]
+        r = requests.get(base_url + '?locations=' + lat + ',' + lon + '/' + "&dayStartTime=" + dat + "&dayEndTime" + dat + "?key=" + api_key)
+        a = r.text()
+     
+        
 
-    
-    
-
-    #get information about avg2
-    cur.execute('SELECT avg_lat, avg_long, date FROM Avg_ISS WHERE id = 2')
-    avg2 = cur.fetchone()
-    lat2 = str(avg2[0])
-    long2 = str(avg2[1])
-    date2 = str(avg2[2])
-
-    #get information about avg3
-    cur.execute('SELECT avg_lat, avg_long, date FROM Avg_ISS WHERE id = 3')
-    avg3 = cur.fetchone()
-    lat3 = str(avg3[0])
-    long3 = str(avg3[1])
-    date3 = str(avg3[2])
-
-
-    #get information about avg4
-    cur.execute('SELECT avg_lat, avg_long, date FROM Avg_ISS WHERE id = 4')
-    avg4 = cur.fetchone()
-    lat4 = str(avg4[0])
-    long4 = str(avg4[1])
-    date4 = str(avg4[2])
-    pass
-
+  
 
  
    
@@ -129,12 +104,11 @@ def main():
     # Database and Tables
     cur, conn = setUpDatabase('API_Data.db')
    
-    create_iss_table(cur, conn)
-    
+    #create_iss_table(cur, conn)
+    #create_weather_table(cur, conn)
     #create_weather_table(cur, conn)
     # create_weather_table(cur, conn)
-    #weather(cur, conn) DO NOT UNCOMMENT UNTIL ABSOLUTELY GOOD AND SURE AND READY
-
+    weather(cur, conn)
     # create_daylight_table(cur, conn)
 if __name__ == '__main__':
     main()
