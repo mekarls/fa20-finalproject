@@ -69,23 +69,40 @@ def weather(cur, conn):
     api_key = '97H6P669AZU5PIG16JBC5N4ES'
     # base_url = 'https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/'
     base_url = 'https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/weatherdata/history/'
+    # https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/weatherdata/history?&aggregateHours=24&startDateTime=2019-06-13T00:00:00&endDateTime=2019-06-20T00:00:00&unitGroup=uk&contentType=csv&dayStartTime=0:0:00&dayEndTime=0:0:00&location=Sterling,VA,US&key=YOURAPIKEY
 
-    cur.execute('SELECT latitude, longitude, date FROM ISS_Data')
+    cur.execute('SELECT latitude, longitude, date, time FROM ISS_Data')
     data1 = cur.fetchall()
 
-    data2 = []
-    for i in data1[:1]:
+    concise_data = []
+    for i in data1[:2]:
         lat = i[0]
         lon = i[1]
         dat = i[2]
-        r = requests.get(base_url + '?locations=' + lat + ',' + lon + '/' + "&dayStartTime=" + dat + "&dayEndTime" + dat + "?key=" + api_key)
-        a = r.json()
-        print(type(a))
-
+        tim = i[3]
+        req = requests.get(f'{base_url}?&aggregateHours=1&startDateTime={dat}T{tim}&contentType=json&location={lat},{lon}&key={api_key}')
+        resp = req.json()
+        # obj = json.dumps(resp)
+        # print(type(obj))
+        # print(obj)
+        #wdir, temp, maxt, wspd, precip, dew, humidity, conditions
+        wdir = resp['locations'][f'{lat},{lon}']['values'][0]['wdir']
+        temp = resp['locations'][f'{lat},{lon}']['values'][0]['temp']
+        maxt = resp['locations'][f'{lat},{lon}']['values'][0]['maxt']
+        wspd = resp['locations'][f'{lat},{lon}']['values'][0]['wspd']
+        precip = resp['locations'][f'{lat},{lon}']['values'][0]['precip']
+        dew = resp['locations'][f'{lat},{lon}']['values'][0]['dew']
+        humidity= resp['locations'][f'{lat},{lon}']['values'][0]['humidity']
+        conditions = resp['locations'][f'{lat},{lon}']['values'][0]['conditions']
+        time_zone = resp['locations'][f'{lat},{lon}']['tz']
+        
+        concise_data.append((wdir, temp, maxt, wspd, precip, dew, humidity, conditions, time_zone))
+        # print('wdir: ', wdir, 'temp: ',temp, 'maxt: ', maxt, wspd, precip, dew, humidity, conditions, time_zone)
+    print(concise_data)
 
 '''             things to ask at office hours:
-1) how to create one table with location_id and location name (as part of weather tables) that we can then use as foreign keys for the daylight table
-2) how do we deal with the json response we're getting from the weather api
+1) x
+2) how to create one table with location_id and time zone (as part of weather tables) that we can then use as foreign keys for the daylight table
 3) how do we pull from the database in one file to make the visualizations if it's created in a different file
 '''  
 
@@ -100,7 +117,7 @@ def create_daylight_table(cur, conn):
     cur.execute('SELECT latitude, longitude, date FROM ISS_Data')
     data = cur.fetchall()
     # print(data)
-    for d in data: #make sure to do 25 at a time
+    for d in data[:5]: #increment manually
         lat, long, date = d[0], d[1], d[2]
     
     #important to note for calculations- given in UTC (coordinated universal time)
@@ -128,8 +145,8 @@ def main():
     #create_iss_table(cur, conn)
 
     # create_weather_table(cur, conn)
-    # weather(cur, conn)
-    create_daylight_table(cur, conn)
+    weather(cur, conn)
+    # create_daylight_table(cur, conn)
 
 if __name__ == '__main__':
     main()
