@@ -79,7 +79,7 @@ def weather(cur, conn):
     cur.execute('SELECT * FROM ISS_Raw')
     data1 = cur.fetchall()
 
-    for i in data1[65:90]: #wait until 8pm central time
+    for i in data1[65:91]: #wait until 8pm central time [65:91]
         # print(i)
         lat = i[2]
         lon = i[3]
@@ -106,30 +106,30 @@ def weather(cur, conn):
             time_zone = resp['locations'][f'{lat},{lon}']['tz']
 
             w.extend([wdir, temp, maxt, wspd, precip, dew, humidity, conditions, time_zone])
-            print(w)
+            # print(w)
             # if None not in w:
                 
-            #     cur.execute('''INSERT INTO ISS_Data (date, time, latitude, longitude) VALUES (?, ?, ?, ?)''', (dat, tim, lat, lon))
-            #     conn.commit()
+            # cur.execute('''INSERT INTO ISS_Data (date, time, latitude, longitude) VALUES (?, ?, ?, ?)''', (dat, tim, lat, lon))
+            # conn.commit()
+        
+            # cur.execute('INSERT OR IGNORE INTO Time_Zones (time_zone) VALUES (?)', (time_zone,))
+            # conn.commit()
+
+            # # create time zone id dictionary
+            # cur.execute("SELECT * FROM Time_Zones")
+            # tz_ids = {}
+            # tzs = cur.fetchall()
             
-            #     cur.execute('INSERT OR IGNORE INTO Time_Zones (time_zone) VALUES (?)', (time_zone,))
-            #     conn.commit()
+            # for t in tzs:
+            #     id = t[0]
+            #     tz = t[1]
+            #     tz_ids[tz] = id
 
-            #     # create time zone id dictionary
-            #     cur.execute("SELECT * FROM Time_Zones")
-            #     tz_ids = {}
-            #     tzs = cur.fetchall()
-                
-            #     for t in tzs:
-            #         id = t[0]
-            #         tz = t[1]
-            #         tz_ids[tz] = id
-
-            #     tz_id = tz_ids[time_zone]
-            #     # print(tz_id)
-            #     cur.execute('''INSERT INTO Weather (time_zone, wind_dir, temp, max_temp, windspeed, precipitation, dew, humidity, conditions) 
-            #     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''', (tz_id, wdir, temp, maxt, wspd, precip, dew, humidity, conditions))
-            #     conn.commit()
+            # tz_id = tz_ids[time_zone]
+            # # print(tz_id)
+            # cur.execute('''INSERT INTO Weather (time_zone, wind_dir, temp, max_temp, windspeed, precipitation, dew, humidity, conditions) 
+            # VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''', (tz_id, wdir, temp, maxt, wspd, precip, dew, humidity, conditions))
+            # conn.commit()
             
     # pass
     
