@@ -43,7 +43,7 @@ def create_iss_tables(cur, conn):
     cur.execute('''CREATE TABLE IF NOT EXISTS 'ISS_Raw' 
     ('date' TEXT, 'time' TEXT, 'latitude' TEXT, 'longitude' TEXT)''')
 
-    for _ in range(15):
+    for _ in range(25):
         iss_data = iss_position()
         iss_data = iss_data.split(',')
         unix = iss_data[0]
@@ -62,9 +62,9 @@ def create_iss_tables(cur, conn):
 def create_weather_tables(cur, conn): #should create a new table 
     #wdir, temp, maxt, wspd, precip, dew, humidity, conditions, time zone
     
+    cur.execute("DROP TABLE IF EXISTS 'Time_Zones'")
     cur.execute('''CREATE TABLE IF NOT EXISTS 'Time_Zones'
     ('id' INTEGER PRIMARY KEY, 'time_zone' TEXT UNIQUE)''')
-    conn.commit()
 
     cur.execute('''CREATE TABLE IF NOT EXISTS 'Weather' 
     ('wind_dir' REAL, 'temp' REAL, 'max_temp' REAL, 'windspeed' REAL, 'precipitation' REAL, 'dew' REAL, 'humidity' REAL, 'conditions' TEXT)''')
@@ -74,47 +74,44 @@ def weather(cur, conn):
     api_key = '97H6P669AZU5PIG16JBC5N4ES'
     base_url = 'https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/weatherdata/history/'
 
-    cur.execute('SELECT latitude, longitude, date, time FROM ISS_Raw')
+    cur.execute('SELECT * FROM ISS_Raw')
     data1 = cur.fetchall()
 
-    for i in data1:
-        lat = i[0]
-        lon = i[1]
-        dat = i[2]
-        tim = i[3]
-        # print(tim)
+    for i in data1[:25]:
+        # print(i)
+        lat = i[2]
+        lon = i[3]
+        dat = i[0]
+        tim = i[1]
+        # print(dat, tim)
         req = requests.get(f'{base_url}?&aggregateHours=1&startDateTime={dat}T{tim}&contentType=json&location={lat},{lon}&key={api_key}')
         resp = req.json()
-        print(resp)
+        # print(resp)
         # obj = json.dumps(resp)
         # # print(type(obj))
         if 'errorCode' not in resp:
 
             # wdir, temp, maxt, wspd, precip, dew, humidity, conditions, time zone
-            wdir = resp['locations'][f'{lat},{lon}']['values'][0]['wdir']
-            temp = resp['locations'][f'{lat},{lon}']['values'][0]['temp']
-            maxt = resp['locations'][f'{lat},{lon}']['values'][0]['maxt']
-            wspd = resp['locations'][f'{lat},{lon}']['values'][0]['wspd']
-            precip = resp['locations'][f'{lat},{lon}']['values'][0]['precip']
-            dew = resp['locations'][f'{lat},{lon}']['values'][0]['dew']
-            humidity= resp['locations'][f'{lat},{lon}']['values'][0]['humidity']
-            conditions = resp['locations'][f'{lat},{lon}']['values'][0]['conditions']
+            # wdir = resp['locations'][f'{lat},{lon}']['values'][0]['wdir']
+            # temp = resp['locations'][f'{lat},{lon}']['values'][0]['temp']
+            # maxt = resp['locations'][f'{lat},{lon}']['values'][0]['maxt']
+            # wspd = resp['locations'][f'{lat},{lon}']['values'][0]['wspd']
+            # precip = resp['locations'][f'{lat},{lon}']['values'][0]['precip']
+            # dew = resp['locations'][f'{lat},{lon}']['values'][0]['dew']
+            # humidity= resp['locations'][f'{lat},{lon}']['values'][0]['humidity']
+            # conditions = resp['locations'][f'{lat},{lon}']['values'][0]['conditions']
             time_zone = resp['locations'][f'{lat},{lon}']['tz']
 
+            # cur.execute('''INSERT INTO ISS_Data (date, time, latitude, longitude) VALUES (?, ?, ?, ?)''', (dat, tim, lat, lon))
+            # conn.commit()
+            
+            cur.execute('INSERT OR IGNORE INTO Time_Zones (time_zone) VALUES (?)', (time_zone,))
+            conn.commit()
+            
             # cur.execute('''INSERT INTO Weather (wind_dir, temp, max_temp, windspeed, precipitation, dew, humidity, conditions) 
             # VALUES (?, ?, ?, ?, ?, ?, ?, ?)''', (wdir, temp, maxt, wspd, precip, dew, humidity, conditions))
             # conn.commit()
             
-            # cur.execute('''INSERT INTO ISS_Data (date, time, latitude, longitude) VALUES (?, ?, ?, ?)''', (dat, tim, lat, lon))
-            # conn.commit()
-            
-            # if time_zone not in time_zones:
-            #     time_zones.append(time_zone)
-            
-        # for tz in time_zones:
-            # cur.execute('INSERT INTO Time_Zones (time_zone) VALUES (?)', (time_zone,))
-            # conn.commit()
-   
     # pass
     
 
@@ -125,6 +122,10 @@ def weather(cur, conn):
 '''  
 
 # def test_iss_data(cur, conn):
+#     cur.execute("SELECT * FROM ISS_Raw"):
+#     data = cur.fetchall()
+
+
 
 
 def create_daylight_table(cur, conn):
