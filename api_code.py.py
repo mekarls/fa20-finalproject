@@ -32,12 +32,16 @@ def iss_position():
 
 # step 3: read api into database
 
-def create_iss_table(cur, conn):
+def create_iss_tables(cur, conn):
     """make sure to commit new data"""
   
     cur.execute("DROP TABLE IF EXISTS 'ISS_Data'")
+    
     cur.execute('''CREATE TABLE IF NOT EXISTS 'ISS_Data' 
-    ('location_id' INTEGER PRIMARY KEY, 'unix' TEXT, 'date' TEXT, 'time' TEXT, 'latitude' TEXT, 'longitude' TEXT)''')
+    ('date' TEXT, 'time' TEXT, 'latitude' TEXT, 'longitude' TEXT)''')
+
+    cur.execute('''CREATE TABLE IF NOT EXISTS 'ISS_Raw' 
+    ('date' TEXT, 'time' TEXT, 'latitude' TEXT, 'longitude' TEXT)''')
 
     for _ in range(10):
         iss_data = iss_position()
@@ -49,7 +53,7 @@ def create_iss_table(cur, conn):
         lat = iss_data[1]
         long = iss_data[2]
         
-        cur.execute('INSERT INTO ISS_Data (unix, date, time, latitude, longitude) VALUES (?, ?, ?, ?, ?)', (unix, date, t, lat, long))
+        cur.execute('INSERT INTO ISS_Raw (date, time, latitude, longitude) VALUES (?, ?, ?, ?)', (date, t, lat, long))
         conn.commit()
 
         time.sleep(30)
@@ -61,25 +65,27 @@ def create_weather_tables(cur, conn): #should create a new table
     cur.execute('''CREATE TABLE IF NOT EXISTS 'Time_Zones'
     ('id' INTEGER PRIMARY KEY, 'time_zone' TEXT)''')
 
-    # cur.execute('''CREATE TABLE IF NOT EXISTS 'Weather' 
-    # ('wind_dir' REAL, 'temp' REAL, 'max_temp' REAL, 'windspeed' REAL, 'precipitation' REAL, 'dew' REAL, 'humidity' REAL, 'conditions' TEXT)''')
+    conn.commit()
+
+    cur.execute('''CREATE TABLE IF NOT EXISTS 'Weather' 
+    ('wind_dir' REAL, 'temp' REAL, 'max_temp' REAL, 'windspeed' REAL, 'precipitation' REAL, 'dew' REAL, 'humidity' REAL, 'conditions' TEXT)''')
     
-    # conn.commit()
+    conn.commit()
 
 
-    pass
+    # pass
 
 def weather(cur, conn):
 
     api_key = '97H6P669AZU5PIG16JBC5N4ES'
     base_url = 'https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/weatherdata/history/'
 
-    cur.execute('SELECT latitude, longitude, date, time FROM ISS_Data')
+    cur.execute('SELECT latitude, longitude, date, time FROM ISS_Raw')
     data1 = cur.fetchall()
 
     time_zones = []
 
-    for i in data1:
+    for i in data1[:25]:
         lat = i[0]
         lon = i[1]
         dat = i[2]
@@ -87,31 +93,34 @@ def weather(cur, conn):
         # print(tim)
         req = requests.get(f'{base_url}?&aggregateHours=1&startDateTime={dat}T{tim}&contentType=json&location={lat},{lon}&key={api_key}')
         resp = req.json()
-        print(resp)
+        # print(resp)
         # obj = json.dumps(resp)
         # # print(type(obj))
-        # print(resp['location'])
-        # #wdir, temp, maxt, wspd, precip, dew, humidity, conditions, time zone
-        # wdir = resp['locations'][f'{lat},{lon}']['values'][0]['wdir']
-        # temp = resp['locations'][f'{lat},{lon}']['values'][0]['temp']
-        # maxt = resp['locations'][f'{lat},{lon}']['values'][0]['maxt']
-        # wspd = resp['locations'][f'{lat},{lon}']['values'][0]['wspd']
-        # precip = resp['locations'][f'{lat},{lon}']['values'][0]['precip']
-        # dew = resp['locations'][f'{lat},{lon}']['values'][0]['dew']
-        # humidity= resp['locations'][f'{lat},{lon}']['values'][0]['humidity']
-        # conditions = resp['locations'][f'{lat},{lon}']['values'][0]['conditions']
-        # time_zone = resp['locations'][f'{lat},{lon}']['tz']
-        # print(time_zone)
-        
-        # concise_data.append((wdir, temp, maxt, wspd, precip, dew, humidity, conditions))
-        # if time_zone not in time_zones:
-        #     time_zones.append(time_zone)
-        
-        # for tz in time_zones:
-        #     cur.execute('INSERT INTO Time_Zones (time_zone) VALUES (?)', (tz,))
+        if 'errorCode' not in resp:
+
+            # wdir, temp, maxt, wspd, precip, dew, humidity, conditions, time zone
+            wdir = resp['locations'][f'{lat},{lon}']['values'][0]['wdir']
+            temp = resp['locations'][f'{lat},{lon}']['values'][0]['temp']
+            maxt = resp['locations'][f'{lat},{lon}']['values'][0]['maxt']
+            wspd = resp['locations'][f'{lat},{lon}']['values'][0]['wspd']
+            precip = resp['locations'][f'{lat},{lon}']['values'][0]['precip']
+            dew = resp['locations'][f'{lat},{lon}']['values'][0]['dew']
+            humidity= resp['locations'][f'{lat},{lon}']['values'][0]['humidity']
+            conditions = resp['locations'][f'{lat},{lon}']['values'][0]['conditions']
+            time_zone = resp['locations'][f'{lat},{lon}']['tz']
+
+            cur.execute('''INSERT INTO Weather (wind_dir, temp, max_temp, windspeed, precipitation, dew, humidity, conditions) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)''', (wdir, temp, maxt, wspd, precip, dew, humidity, conditions))
+            
+            cur.execute('''INSERT INTO ISS_Data (date, time, latitude, longitude) VALUES (?, ?, ?, ?)''', (dat, tim, lat, lon))
+            
+            if time_zone not in time_zones:
+                time_zones.append(time_zone)
+            
+        for tz in time_zones:
+                cur.execute('INSERT INTO Time_Zones (time_zone) VALUES (?)', (tz,))
     # print(time_zones) 
-        # cur.execute('''INSERT INTO Weather (wind_dir, temp, max_temp, windspeed, precipitation, dew, humidity, conditions) 
-        # VALUES (?, ?, ?, ?, ?, ?, ?, ?)''', (wdir, temp, maxt, wspd, precip, dew, humidity, conditions)) #put in time_zone id
+        #  #put in time_zone id
     # pass
     
 
@@ -120,6 +129,9 @@ def weather(cur, conn):
 2) how to create one table with location_id and time zone (as part of weather tables) that we can then use as foreign keys for the daylight table
 3) how do we pull from the database in one file to make the visualizations if it's created in a different file
 '''  
+
+# def test_iss_data(cur, conn):
+
 
 def create_daylight_table(cur, conn):
     """make sure to commit new data"""
@@ -157,10 +169,11 @@ def main():
     # Database and Tables
     cur, conn = setUpDatabase('API_Data.db')
    
-    # create_iss_table(cur, conn)
+    create_iss_tables(cur, conn)
+    
+    create_weather_tables(cur, conn)
+    weather(cur, conn)
 
-    # create_weather_tables(cur, conn)
-    # weather(cur, conn)
     # create_daylight_table(cur, conn)
 
 if __name__ == '__main__':
