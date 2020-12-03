@@ -107,29 +107,29 @@ def weather(cur, conn):
 
             w.extend([wdir, temp, maxt, wspd, precip, dew, humidity, conditions, time_zone])
             # print(w)
-            # if None not in w:
-                
-            # cur.execute('''INSERT INTO ISS_Data (date, time, latitude, longitude) VALUES (?, ?, ?, ?)''', (dat, tim, lat, lon))
-            # conn.commit()
-        
-            # cur.execute('INSERT OR IGNORE INTO Time_Zones (time_zone) VALUES (?)', (time_zone,))
-            # conn.commit()
-
-            # # create time zone id dictionary
-            # cur.execute("SELECT * FROM Time_Zones")
-            # tz_ids = {}
-            # tzs = cur.fetchall()
+                # if None not in w:
+                    
+                # cur.execute('''INSERT INTO ISS_Data (date, time, latitude, longitude) VALUES (?, ?, ?, ?)''', (dat, tim, lat, lon))
+                # conn.commit()
             
-            # for t in tzs:
-            #     id = t[0]
-            #     tz = t[1]
-            #     tz_ids[tz] = id
+                # cur.execute('INSERT OR IGNORE INTO Time_Zones (time_zone) VALUES (?)', (time_zone,))
+                # conn.commit()
 
-            # tz_id = tz_ids[time_zone]
-            # # print(tz_id)
-            # cur.execute('''INSERT INTO Weather (time_zone, wind_dir, temp, max_temp, windspeed, precipitation, dew, humidity, conditions) 
-            # VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''', (tz_id, wdir, temp, maxt, wspd, precip, dew, humidity, conditions))
-            # conn.commit()
+                # # create time zone id dictionary
+                # cur.execute("SELECT * FROM Time_Zones")
+                # tz_ids = {}
+                # tzs = cur.fetchall()
+                
+                # for t in tzs:
+                #     id = t[0]
+                #     tz = t[1]
+                #     tz_ids[tz] = id
+
+                # tz_id = tz_ids[time_zone]
+                # # print(tz_id)
+                # cur.execute('''INSERT INTO Weather (time_zone, wind_dir, temp, max_temp, windspeed, precipitation, dew, humidity, conditions) 
+                # VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''', (tz_id, wdir, temp, maxt, wspd, precip, dew, humidity, conditions))
+                # conn.commit()
             
     # pass
     
