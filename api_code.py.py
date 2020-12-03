@@ -33,7 +33,6 @@ def iss_position():
 # step 3: read api into database
 
 def create_iss_tables(cur, conn):
-    """make sure to commit new data"""
   
     cur.execute("DROP TABLE IF EXISTS 'ISS_Data'")
     
@@ -73,14 +72,12 @@ def create_weather_tables(cur, conn): #should create a new table
     conn.commit()
 
 
-    # pass
-time_zones = []
-count = 0 # clout
+# time_zones = []
 
-def weather(cur, conn):
+def weather(cur, conn, time_zones):
 
-    if count == 100:
-        break
+
+
 
     api_key = '97H6P669AZU5PIG16JBC5N4ES'
     base_url = 'https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/weatherdata/history/'
@@ -101,7 +98,7 @@ def weather(cur, conn):
         # # print(type(obj))
         if 'errorCode' not in resp:
             
-            count += 1
+            # count += 1
 
             # wdir, temp, maxt, wspd, precip, dew, humidity, conditions, time zone
             wdir = resp['locations'][f'{lat},{lon}']['values'][0]['wdir']
@@ -170,13 +167,15 @@ def create_daylight_table(cur, conn):
 
 def main():
 
+    time_zones = []
     # Database and Tables
     cur, conn = setUpDatabase('API_Data.db')
    
-    create_iss_tables(cur, conn)
+    #create_iss_tables(cur, conn)
     
-    create_weather_tables(cur, conn)
-    weather(cur, conn)
+    #create_weather_tables(cur, conn)
+    weather(cur, conn, time_zones)
+    print(time_zones)
 
     # create_daylight_table(cur, conn)
 
