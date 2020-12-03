@@ -74,8 +74,13 @@ def create_weather_tables(cur, conn): #should create a new table
 
 
     # pass
+time_zones = []
+count = 0 # clout
 
 def weather(cur, conn):
+
+    if count == 100:
+        break
 
     api_key = '97H6P669AZU5PIG16JBC5N4ES'
     base_url = 'https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/weatherdata/history/'
@@ -83,9 +88,7 @@ def weather(cur, conn):
     cur.execute('SELECT latitude, longitude, date, time FROM ISS_Raw')
     data1 = cur.fetchall()
 
-    time_zones = []
-
-    for i in data1[:25]:
+    for i in data1[:10]:
         lat = i[0]
         lon = i[1]
         dat = i[2]
@@ -97,6 +100,8 @@ def weather(cur, conn):
         # obj = json.dumps(resp)
         # # print(type(obj))
         if 'errorCode' not in resp:
+            
+            count += 1
 
             # wdir, temp, maxt, wspd, precip, dew, humidity, conditions, time zone
             wdir = resp['locations'][f'{lat},{lon}']['values'][0]['wdir']
@@ -119,8 +124,7 @@ def weather(cur, conn):
             
         for tz in time_zones:
                 cur.execute('INSERT INTO Time_Zones (time_zone) VALUES (?)', (tz,))
-    # print(time_zones) 
-        #  #put in time_zone id
+   
     # pass
     
 
@@ -180,10 +184,3 @@ if __name__ == '__main__':
     main()
 
 
-'''             here's what we need to do
-1) collect lots of iss data 25 at a time
-2) call it all through the weather api (sorry julia, will help pay !)
-3) if it does not return an error, we add it to a new iss_data table
-4) if it does return an error, we do nothing special with it
-5) we keep going until the iss_data table has 100 items that will run properly through the weather api
-'''
