@@ -79,7 +79,9 @@ def weather(cur, conn):
     cur.execute('SELECT * FROM ISS_Raw')
     data1 = cur.fetchall()
 
-    for i in data1[166:191]: # [191:216]
+    count = 0 # prints with each 25 so we know how much we get
+
+    for i in data1[216:241]: # x[191:216] [216:241] [241:266] intervals to test
         # print(i)
         lat = i[2]
         lon = i[3]
@@ -89,8 +91,10 @@ def weather(cur, conn):
         req = requests.get(f'{base_url}?&aggregateHours=1&startDateTime={dat}T{tim}&contentType=json&location={lat},{lon}&key={api_key}')
         resp = req.json()
         # print('errorCode' in resp)
-    #     # obj = json.dumps(resp)
-    #     # # print(type(obj))
+        # print(resp)
+        # obj = json.dumps(resp)
+        # print(type(obj))
+
         if 'errorCode' not in resp:
 
             w = []
@@ -107,29 +111,32 @@ def weather(cur, conn):
 
             w.extend([wdir, temp, maxt, wspd, precip, dew, humidity, conditions, time_zone])
             # print(w)
-            if None not in w:
-            #     # print(w)
-                cur.execute('''INSERT INTO ISS_Data (date, time, latitude, longitude) VALUES (?, ?, ?, ?)''', (dat, tim, lat, lon))
-                conn.commit()
+            # if None not in w:
             
-                cur.execute('INSERT OR IGNORE INTO Time_Zones (time_zone) VALUES (?)', (time_zone,))
-                conn.commit()
+            #     count += 1
 
-                # create time zone id dictionary
-                cur.execute("SELECT * FROM Time_Zones")
-                tz_ids = {}
-                tzs = cur.fetchall()
+            #     cur.execute('''INSERT INTO ISS_Data (date, time, latitude, longitude) VALUES (?, ?, ?, ?)''', (dat, tim, lat, lon))
+            #     conn.commit()
+            
+            #     cur.execute('INSERT OR IGNORE INTO Time_Zones (time_zone) VALUES (?)', (time_zone,))
+            #     conn.commit()
+
+            #     # create time zone id dictionary
+            #     cur.execute("SELECT * FROM Time_Zones")
+            #     tz_ids = {}
+            #     tzs = cur.fetchall()
                 
-                for t in tzs:
-                    id = t[0]
-                    tz = t[1]
-                    tz_ids[tz] = id
+            #     for t in tzs:
+            #         id = t[0]
+            #         tz = t[1]
+            #         tz_ids[tz] = id
 
-                tz_id = tz_ids[time_zone]
-                # print(tz_id)
-                cur.execute('''INSERT INTO Weather (time_zone, wind_dir, temp, max_temp, windspeed, precipitation, dew, humidity, conditions) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''', (tz_id, wdir, temp, maxt, wspd, precip, dew, humidity, conditions))
-                conn.commit()
+            #     tz_id = tz_ids[time_zone]
+            #     # print(tz_id)
+            #     cur.execute('''INSERT INTO Weather (time_zone, wind_dir, temp, max_temp, windspeed, precipitation, dew, humidity, conditions) 
+            #     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''', (tz_id, wdir, temp, maxt, wspd, precip, dew, humidity, conditions))
+            #     conn.commit()
+    print(count)
             
     # pass
     
@@ -137,7 +144,7 @@ def weather(cur, conn):
 '''             things to ask at office hours:
 1) x
 2) x
-3) how do we pull from the database in one file to make the visualizations if it's created in a different file
+3) x
 '''  
 
 def create_daylight_table(cur, conn):
@@ -176,10 +183,10 @@ def main():
     # Database and Tables
     cur, conn = setUpDatabase('API_Data.db')
    
-    create_iss_tables(cur, conn)
+    # create_iss_tables(cur, conn)
     
     # create_weather_tables(cur, conn)
-    # weather(cur, conn)
+    weather(cur, conn)
 
     # create_daylight_table(cur, conn)
 
