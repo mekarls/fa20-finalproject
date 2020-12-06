@@ -43,7 +43,7 @@ def create_iss_tables(cur, conn):
     cur.execute('''CREATE TABLE IF NOT EXISTS 'ISS_Raw' 
     ('date' TEXT, 'time' TEXT, 'latitude' TEXT, 'longitude' TEXT)''')
 
-    for _ in range(20):
+    for _ in range(10):
         iss_data = iss_position()
         iss_data = iss_data.split(',')
         unix = iss_data[0]
@@ -81,7 +81,7 @@ def weather(cur, conn):
   
     count = 0 # prints with each 25 so we know how much we get
 
-    for i in data1[671:691]: # x[191:216] x[216:241] x[241:266] x[266:276] x[276:286] intervals to test
+    for i in data1[691:707]: # x[191:216] x[216:241] x[241:266] x[266:276] x[276:286] intervals to test
         # print(i)
         dat, tim, lat, lon= i[0], i[1], i[2], i[3]
         # print(dat, tim)
@@ -109,7 +109,7 @@ def weather(cur, conn):
             w.extend([wdir, temp, maxt, wspd, precip, dew, humidity, conditions, time_zone])
             # print(w)
             if '' not in w:
-            #     print(w)
+            # #     print(w)
                 count += 1
 
                 cur.execute('''INSERT INTO ISS_Data (date, time, latitude, longitude) VALUES (?, ?, ?, ?)''', (dat, tim, lat, lon))
@@ -133,7 +133,7 @@ def weather(cur, conn):
                 cur.execute('''INSERT INTO Weather (time_zone, wind_dir, temp, max_temp, windspeed, precipitation, dew, humidity, conditions) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''', (tz_id, wdir, temp, maxt, wspd, precip, dew, humidity, conditions))
                 conn.commit()
-    print('done')
+    print(count)
             
     # # pass
     
@@ -155,9 +155,9 @@ def create_daylight_table(cur, conn):
     cur.execute('SELECT latitude, longitude, date FROM ISS_Data')
     data = cur.fetchall()
     # print(data)
-    for d in data[25:51]: #increment manually
+    for d in data[105:106]: #increment manually
         lat, long, date = d[0], d[1], d[2]
-    
+        print(lat, long, date)
     #important to note for calculations- given in UTC (coordinated universal time)
         base_url = 'https://api.sunrise-sunset.org/json'
         req = requests.get(f'{base_url}?lat={lat}&lng={long}&date={date}')
@@ -165,9 +165,9 @@ def create_daylight_table(cur, conn):
         resp_dict = resp['results']
 
         rise, set, solar, length = resp_dict['sunrise'], resp_dict['sunset'], resp_dict['solar_noon'], resp_dict['day_length']
-       
-        cur.execute('INSERT INTO Daylight (sunrise, sunset, solar_noon, day_length) VALUES (?, ?, ?, ?)', (rise, set, solar, length))
-        conn.commit()
+        print(rise, set, solar, length)
+        # cur.execute('INSERT INTO Daylight (sunrise, sunset, solar_noon, day_length) VALUES (?, ?, ?, ?)', (rise, set, solar, length))
+        # conn.commit()
 
     # pass
 
@@ -184,8 +184,8 @@ def main():
     
     # create_weather_tables(cur, conn)
     
-    weather(cur, conn)
-    # create_daylight_table(cur, conn)
+    # weather(cur, conn)
+    create_daylight_table(cur, conn)
 
 if __name__ == '__main__':
     main()
