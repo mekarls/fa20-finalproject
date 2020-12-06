@@ -43,7 +43,7 @@ def create_iss_tables(cur, conn):
     cur.execute('''CREATE TABLE IF NOT EXISTS 'ISS_Raw' 
     ('date' TEXT, 'time' TEXT, 'latitude' TEXT, 'longitude' TEXT)''')
 
-    for _ in range(10):
+    for _ in range(20):
         iss_data = iss_position()
         iss_data = iss_data.split(',')
         unix = iss_data[0]
@@ -51,13 +51,13 @@ def create_iss_tables(cur, conn):
         date = time_update[0]
         t = time_update[1]
         lat = iss_data[1]
-        long = iss_data[2]
+        lon = iss_data[2]
         
-        cur.execute('INSERT INTO ISS_Raw (date, time, latitude, longitude) VALUES (?, ?, ?, ?)', (date, t, lat, long))
+        cur.execute('INSERT INTO ISS_Raw (date, time, latitude, longitude) VALUES (?, ?, ?, ?)', (date, t, lat, lon))
         conn.commit()
 
-        time.sleep(30)
-
+        time.sleep(15)
+        print('done')
 
 def create_weather_tables(cur, conn): #should create a new table 
     #wdir, temp, maxt, wspd, precip, dew, humidity, conditions, time zone
@@ -78,10 +78,10 @@ def weather(cur, conn):
  
     cur.execute('SELECT * FROM ISS_Raw')
     data1 = cur.fetchall()
-
+  
     count = 0 # prints with each 25 so we know how much we get
 
-    for i in data1[276:286]: # x[191:216] x[216:241] x[241:266] x[266:276] x[276:286] intervals to test
+    for i in data1[671:691]: # x[191:216] x[216:241] x[241:266] x[266:276] x[276:286] intervals to test
         # print(i)
         dat, tim, lat, lon= i[0], i[1], i[2], i[3]
         # print(dat, tim)
@@ -133,9 +133,9 @@ def weather(cur, conn):
                 cur.execute('''INSERT INTO Weather (time_zone, wind_dir, temp, max_temp, windspeed, precipitation, dew, humidity, conditions) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''', (tz_id, wdir, temp, maxt, wspd, precip, dew, humidity, conditions))
                 conn.commit()
-    print(count)
+    print('done')
             
-    # pass
+    # # pass
     
 
 '''             things to ask at office hours:
@@ -183,8 +183,8 @@ def main():
     # create_iss_tables(cur, conn)
     
     # create_weather_tables(cur, conn)
+    
     weather(cur, conn)
-
     # create_daylight_table(cur, conn)
 
 if __name__ == '__main__':
