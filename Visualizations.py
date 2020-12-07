@@ -3,8 +3,6 @@ import sqlite3
 import json
 import os
 import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
-from dateutil import parser
 from matplotlib import style
 style.use('fivethirtyeight')
 
@@ -23,19 +21,36 @@ cur = conn.cursor()
 #     time_result = cur.fetchall()
 #     return (time_result)
 
+#def read_from_db():
+#    cur.execute("SELECT strftime('%m-%d',ISS_Data.date), ISS_Data.time FROM ISS_Data",)
+    #cur.execute("SELECT ISS_Data.date, ISS_Data.time FROM ISS_Data",)
+#    for row in cur.fetchall():
+#        print(row)
+    #data = cur.fetchall()
+    #print(data)
+
+
+
 def graph_data():
-    cur.execute('SELECT ISS_Data.date, ISS_Data.time FROM ISS_Data',)
+    cur.execute("SELECT strftime('%m-%d',ISS_Data.date), strftime('%H:%M', ISS_Data.time) FROM ISS_Data",)
     data = cur.fetchall()
+
 
     dates = []
     values = []
+
     
     for row in data:
-        dates.append(parser.parse(row[0]))
+        dates.append(row[0])
         values.append(row[1])
 
-    plt.plot_date(dates,values,'-')
+    print(dates)
+    print(values)
+    plt.plot_date(dates,values, '-')
     plt.show()
+    
+    #print(dates)
+    #print(values)
 
 
 # def main():
@@ -50,5 +65,6 @@ def graph_data():
 # if __name__ == "__main__":
 #     main
 graph_data()
+#read_from_db()
 cur.close()
 conn.close()
