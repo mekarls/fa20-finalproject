@@ -31,26 +31,32 @@ cur = conn.cursor()
 
 
 
-def graph_data():
-    cur.execute("SELECT strftime('%m-%d',ISS_Data.date), strftime('%H:%M', ISS_Data.time) FROM ISS_Data",)
-    data = cur.fetchall()
+# def graph_data(cur, conn):
+#     cur.execute("SELECT strftime('%m-%d',ISS_Data.date), strftime('%H:%M', ISS_Data.time) FROM ISS_Data",)
+#     data = cur.fetchall()
 
 
-    dates = []
-    values = []
+#     dates = []
+#     values = []
 
     
-    for row in data:
-        dates.append(row[0])
-        values.append(row[1])
+#     for row in data:
+#         dates.append(row[0])
+#         values.append(row[1])
 
-    print(dates)
-    print(values)
-    plt.plot_date(dates,values, '-')
-    plt.show()
+#     print(dates)
+#     print(values)
+#     plt.plot_date(dates,values, '-')
+#     plt.show()
     
-    #print(dates)
-    #print(values)
+#     #print(dates)
+#     #print(values)
+
+def daylengthVSmaxtemp(cur, conn): #include join
+
+def conditionsPiechart(cur, conn): #each day needs one
+
+def dewpointVShumidity(cur, conn): #3 axis line chart
 
 
 # def main():
