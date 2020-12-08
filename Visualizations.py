@@ -13,8 +13,7 @@ style.use('fivethirtyeight')
 #     cur = conn.cursor()
 #     return cur, conn
 
-conn = sqlite3.connect('API_Data.db')
-cur = conn.cursor()
+
 
 # def get_one_ISS_Data(cur, conn):
 #     cur.execute("SELECT ISS_Data.time FROM ISS_Data",)
@@ -53,14 +52,57 @@ cur = conn.cursor()
 #     #print(values)
 
 def daylengthVSmaxtemp(cur, conn): #include join
+    pass
 
 def conditionsPiechart(cur, conn): #each day needs one
 
+    cur.execute('SELECT Weather.conditions, Time_Zones.time_zone FROM Weather INNER JOIN Time_Zones ON Weather.time_zone = Time_Zones.id')
+    data = cur.fetchall() #list of tuples, [0] = condition, [1] = time_zone
+    # print(data) 
+
+    cur.execute("SELECT strftime('%m-%d',ISS_Data.date) FROM ISS_Data WHERE ISS_Data.date LIKE '%12-03%'")
+    # cur.execute('SELECT date FROM ISS_')
+    dec3 = cur.fetchall()
+    index3 = len(dec3)
+    
+    data3 = data[:index3]
+
+    cond3 = []
+    timezone3 = []
+
+    for day in data3:
+        cond3.append(day[0])
+        timezone3.append(day[1])
+    
+    print(cond3)
+    print(timezone3)
+
+    cur.execute("SELECT strftime('%m-%d',ISS_Data.date) FROM ISS_Data WHERE ISS_Data.date LIKE '%12-04%'")
+    dec4 = cur.fetchall()
+    index4 = index3 + len(dec4)
+    
+    data4 = data[index3:index4]
+    # print(len(data4))
+
+    cur.execute("SELECT strftime('%m-%d',ISS_Data.date) FROM ISS_Data WHERE ISS_Data.date LIKE '%12-05%'")
+    dec5 = cur.fetchall()
+    index5 = index4 + len(dec5)
+    
+    # data5 = 
+
+    cur.execute("SELECT strftime('%m-%d',ISS_Data.date) FROM ISS_Data WHERE ISS_Data.date LIKE '%12-06%'")
+    dec6 = cur.fetchall()
+    index6 = index5 + len(dec6)
+    # print(index6)
+
 def dewpointVShumidity(cur, conn): #3 axis line chart
+    pass
 
-
-# def main():
-#      # cur, conn = setUpDatabase('API_Data.db')
+def main():
+    # cur, conn = setUpDatabase('API_Data.db')
+    conn = sqlite3.connect('API_Data.db')
+    cur = conn.cursor()
+    conditionsPiechart(cur, conn)
 #      print('--------get time----------')
 #      # print(get_one_ISS_Data(cur, conn))
 #      print('--------get plot of date and time--------')
@@ -68,9 +110,10 @@ def dewpointVShumidity(cur, conn): #3 axis line chart
     
 
 
-# if __name__ == "__main__":
-#     main
-graph_data()
+if __name__ == "__main__":
+    main()
+# graph_data()
 #read_from_db()
-cur.close()
-conn.close()
+
+# cur.close()
+# conn.close()
