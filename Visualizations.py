@@ -2,12 +2,15 @@ import unittest
 import sqlite3
 import json
 import os
-import plotly
-#import plotly.plotly as py
-import plotly.graph_objects as go
-#import pandas as pd
-import matplotlib.pyplot as plt
+# import plotly
+# import plotly.plotly as py
+# import plotly.graph_objects as go
+# import pandas as pd
+# import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+
 
 
 
@@ -56,8 +59,32 @@ import numpy as np
 #     #print(values)
 
 def daylengthVSmaxtemp(cur, conn): #include join
-    pass
+    cur.execute('SELECT day_length FROM Daylight')
+    daylength1 = cur.fetchall()
+    daylight2 = []
+    for x in daylength1:
+        daylight2.append(x[0])
 
+    cur.execute('SELECT max_temp FROM Weather')
+    maxtemps = cur.fetchall()
+    maxtemps2 = []
+    for x in maxtemps:
+        maxtemps2.append(x[0])
+
+    # Create data
+    colors = ['red']
+    area = np.pi*3
+
+    # Plot
+    plt.scatter(daylight2, maxtemps2, s=area, c=colors, alpha=0.5)
+    plt.title('Scatter Plot of Daylength VS Maximum Temperature')
+    plt.xlabel('Amount of Daylight (Hours:Minutes:Seconds)')
+    plt.ylabel('Maximum Temperature (Farenheit)')
+    plt.show()
+
+
+    
+    
 def conditionsPiechart(cur, conn): #each day needs one
 
     cur.execute('SELECT Weather.conditions, Time_Zones.time_zone FROM Weather INNER JOIN Time_Zones ON Weather.time_zone = Time_Zones.id')
@@ -134,13 +161,45 @@ def conditionsPiechart(cur, conn): #each day needs one
 
 
 def dewpointVShumidity(cur, conn): #3 axis line chart
-    pass
+    cur.execute("SELECT dew FROM Weather")
+    dew = cur.fetchall()
+    dewpoint = []
+    for x in dew:
+        dewpoint.append(x[0])
+    
+    data = list(range(103))
+    data = data[1:103]
 
+
+    cur.execute("SELECT humidity FROM Weather")
+    humid = cur.fetchall()
+    humidity = []
+    for x in humid:
+        humidity.append(x[0])
+
+    fig, ax = plt.subplots()
+ 
+    ax.plot(data,dewpoint)
+    ax.plot(data,humidity)
+    ax.set_title('Line Graph of Dewpoint VS Humidity')
+    ax.set_xlabel('International Space Station Location ID')
+    ax.set_ylabel('Dewpoint')
+
+    secaxy = ax.secondary_yaxis('right')
+    secaxy.set_ylabel(r'Humidity')
+    ax.legend(['Dewpoint','Humidity'])
+
+    plt.show()
+    
+    
 def main():
     # cur, conn = setUpDatabase('API_Data.db')
     conn = sqlite3.connect('API_Data.db')
     cur = conn.cursor()
-    conditionsPiechart(cur, conn)
+    # # conditionsPiechart(cur, conn)
+    daylengthVSmaxtemp(cur, conn)
+    dewpointVShumidity(cur, conn)
+
 #      print('--------get time----------')
 #      # print(get_one_ISS_Data(cur, conn))
 #      print('--------get plot of date and time--------')
