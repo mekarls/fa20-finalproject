@@ -2,61 +2,9 @@ import unittest
 import sqlite3
 import json
 import os
-# import plotly
-# import plotly.plotly as py
-# import plotly.graph_objects as go
-# import pandas as pd
-# import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-
-
-
-
-# def setUpDatabase(db_name):
-#     path = os.path.dirname(os.path.abspath(__file__))
-#     conn = sqlite3.connect(path+'/'+db_name)
-#     cur = conn.cursor()
-#     return cur, conn
-
-
-
-# def get_one_ISS_Data(cur, conn):
-#     cur.execute("SELECT ISS_Data.time FROM ISS_Data",)
-#     time_result = cur.fetchall()
-#     return (time_result)
-
-#def read_from_db():
-#    cur.execute("SELECT strftime('%m-%d',ISS_Data.date), ISS_Data.time FROM ISS_Data",)
-    #cur.execute("SELECT ISS_Data.date, ISS_Data.time FROM ISS_Data",)
-#    for row in cur.fetchall():
-#        print(row)
-    #data = cur.fetchall()
-    #print(data)
-
-
-
-# def graph_data(cur, conn):
-#     cur.execute("SELECT strftime('%m-%d',ISS_Data.date), strftime('%H:%M', ISS_Data.time) FROM ISS_Data",)
-#     data = cur.fetchall()
-
-
-#     dates = []
-#     values = []
-
-    
-#     for row in data:
-#         dates.append(row[0])
-#         values.append(row[1])
-
-#     print(dates)
-#     print(values)
-#     plt.plot_date(dates,values, '-')
-#     plt.show()
-    
-#     #print(dates)
-#     #print(values)
 
 def daylengthVSmaxtemp(cur, conn): #include join
     cur.execute('SELECT day_length FROM Daylight')
@@ -81,11 +29,8 @@ def daylengthVSmaxtemp(cur, conn): #include join
     plt.xlabel('Amount of Daylight (Hours:Minutes:Seconds)')
     plt.ylabel('Maximum Temperature (Farenheit)')
     plt.show()
-
-
     
-    
-def conditionsPiechart(cur, conn): #each day needs one
+def conditionsPiechart(cur, conn): #each timezone needs a chart
 
     cur.execute('SELECT Weather.conditions, Time_Zones.time_zone FROM Weather INNER JOIN Time_Zones ON Weather.time_zone = Time_Zones.id')
     data = cur.fetchall() #list of tuples, [0] = condition, [1] = time_zone
@@ -97,15 +42,8 @@ def conditionsPiechart(cur, conn): #each day needs one
     most_common_tz = sorted(d, key=d.get, reverse=True)
     # print(most_common_tz) #paris, toronto, riyadh
     
-
-
-    # cur.execute("SELECT strftime('%m-%d',ISS_Data.date) FROM ISS_Data WHERE ISS_Data.date LIKE '%12-03%'")
-    # # cur.execute('SELECT date FROM ISS_')
-    # dec3 = cur.fetchall()
-    # index3 = len(dec3)
-    
-    # data3 = data[:index3]
-
+    #above functions were used to find the most frequently found timezones in our data
+    #below functions were used to plot the three pie charts 
     paris = {}
     p_count = 0
     toronto = {}
@@ -124,10 +62,9 @@ def conditionsPiechart(cur, conn): #each day needs one
             riyadh[i[0]] = riyadh.get(i[0], 0) + 1
             r_count += 1
         
-    # print(paris)
-    # print(toronto)
-    # print(riyadh)
-
+    #print(paris)
+    #print(toronto)
+    #print(riyadh)
 
     # --------------------- PARIS ---------------------
     paris_s = []
@@ -140,25 +77,66 @@ def conditionsPiechart(cur, conn): #each day needs one
         i_dec = "{:.2f}".format(i)
         paris_s.append(float(i_dec))
 
-        
-    
-    # print(paris_s)
-    # print(paris_c)
+    #print(paris_s)
+    #print(paris_c)
 
     colors = ['PaleGreen', 'CornflowerBlue', 'DeepPink']
     explode = (0, 0, 0.25)  # explode 1st slice
   
-
 # Plot
     patches = plt.pie(paris_s, colors=colors, autopct='%1.1f%%', shadow=True, startangle=155, explode=explode)
-    # plt.tight_layout()
+    plt.tight_layout()
     plt.legend(patches, labels=paris_c)
     plt.axis('equal')
     plt.title('Weather Conditions in Paris')
     plt.show()
     
+    # ----------------------Toronto-----------------------------
+    toronto_s = []
+    toronto_c = []
+    
+    for i in toronto.items():
+        toronto_c.append(i[0])
+        
+        i = i[1]/p_count * 100
+        i_dec = "{:.2f}".format(i)
+        toronto_s.append(float(i_dec))
 
+    #print(toronto_c)
+    #print(toronto_s)
+    colors = ['CornflowerBlue', 'DeepPink']
+    explode = (0, 0.1)  # explode 1st slice
 
+    patches = plt.pie(toronto_s, colors=colors, autopct='%1.1f%%', shadow=True, startangle=155, explode=explode)
+    plt.tight_layout()
+    plt.legend(patches, labels=toronto_c)
+    plt.axis('equal')
+    plt.title('Weather Conditions in Toronto')
+    plt.show()
+
+    #-----------------------Riyadh----------------------
+
+    riyadh_s = []
+    riyadh_c = []
+    
+    for i in riyadh.items():
+        riyadh_c.append(i[0])
+        
+        i = i[1]/p_count * 100
+        i_dec = "{:.2f}".format(i)
+        riyadh_s.append(float(i_dec))
+
+    #print(riyadh_c)
+    #print(riyadh_s)
+    colors = ['DeepPink']
+    #explode = (0,)  # explode 1st slice
+
+    patches = plt.pie(riyadh_s, colors=colors, autopct='%1.1f%%', shadow=True, startangle=155)
+    plt.tight_layout()
+    plt.legend(patches, labels=riyadh_c)
+    plt.axis('equal')
+    plt.title('Weather Conditions in Riyadh')
+    plt.show()
 
 def dewpointVShumidity(cur, conn): #3 axis line chart
     cur.execute("SELECT dew FROM Weather")
@@ -193,24 +171,14 @@ def dewpointVShumidity(cur, conn): #3 axis line chart
     
     
 def main():
-    # cur, conn = setUpDatabase('API_Data.db')
     conn = sqlite3.connect('API_Data.db')
     cur = conn.cursor()
-    # # conditionsPiechart(cur, conn)
+    conditionsPiechart(cur, conn)
     daylengthVSmaxtemp(cur, conn)
     dewpointVShumidity(cur, conn)
 
-#      print('--------get time----------')
-#      # print(get_one_ISS_Data(cur, conn))
-#      print('--------get plot of date and time--------')
-#      print(graph_data(cur, conn))
-    
+
 
 
 if __name__ == "__main__":
     main()
-# graph_data()
-#read_from_db()
-
-# cur.close()
-# conn.close()
