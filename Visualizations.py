@@ -5,6 +5,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+import collections
 
 def daylengthVSmaxtemp(cur, conn): #include join
     cur.execute('SELECT day_length FROM Daylight')
@@ -19,16 +20,23 @@ def daylengthVSmaxtemp(cur, conn): #include join
     for x in maxtemps:
         maxtemps2.append(x[0])
 
+    res = dict(zip(daylight2, maxtemps2))
+    final = collections.OrderedDict(sorted(res.items()))
+    # print(type(final))
+    keys, values = final.keys(), final.values()
+    # print(keys)
     # Create data
     colors = ['red']
     area = np.pi*3
 
     # Plot
-    plt.scatter(daylight2, maxtemps2, s=area, c=colors, alpha=0.5)
+    plt.scatter(keys, values, s=area, c=colors, alpha=0.5)
     plt.title('Scatter Plot of Daylength VS Maximum Temperature')
     plt.xlabel('Amount of Daylight (Hours:Minutes:Seconds)')
     plt.ylabel('Maximum Temperature (Farenheit)')
-    # plt.show()
+
+    
+    plt.show()
     
 def conditionsPiechart(cur, conn): #each timezone needs a chart
 
@@ -213,9 +221,9 @@ def dewpointVShumidity(cur, conn): #3 axis line chart
 def main():
     conn = sqlite3.connect('API_Data.db')
     cur = conn.cursor()
-    # conditionsPiechart(cur, conn)
-    # daylengthVSmaxtemp(cur, conn)
-    # dewpointVShumidity(cur, conn)
+    conditionsPiechart(cur, conn)
+    daylengthVSmaxtemp(cur, conn)
+    dewpointVShumidity(cur, conn)
 
 
 
