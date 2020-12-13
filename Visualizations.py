@@ -32,8 +32,13 @@ def daylengthVSmaxtemp(cur, conn): #include join
     # Plot
     plt.scatter(keys, values, s=area, c=colors, alpha=0.5)
     plt.title('Scatter Plot of Daylength VS Maximum Temperature')
-    plt.xlabel('Amount of Daylight (Hours:Minutes:Seconds)')
+    plt.xlabel('Amount of Daylight (Hours:Minutes)')
     plt.ylabel('Maximum Temperature (Farenheit)')
+    ax = plt.gca()
+    pos = [0, 20, 40, 60, 80, 100]
+    l = [8,'8:18','8:50','9:51','11:54', '13:57']
+    ax.set(xticks=pos, xticklabels=l)
+
 
     
     plt.show()
@@ -215,15 +220,15 @@ def dewpointVShumidity(cur, conn): #3 axis line chart
     secaxy.set_ylabel(r'Humidity')
     ax.legend(['Dewpoint','Humidity'])
 
-    # plt.show()
+    plt.show()
     
     
 def main():
     conn = sqlite3.connect('API_Data.db')
     cur = conn.cursor()
-    conditionsPiechart(cur, conn)
+    # conditionsPiechart(cur, conn)
     daylengthVSmaxtemp(cur, conn)
-    dewpointVShumidity(cur, conn)
+    # dewpointVShumidity(cur, conn)
 
 
 
